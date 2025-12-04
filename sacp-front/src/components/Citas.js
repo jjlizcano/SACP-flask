@@ -1,93 +1,133 @@
-import React, { useEffect, useState } from 'react';
-import api from '../api';
+import React, { useState, useEffect } from 'react';
+import { fetchCitas, createCita, updateCita, deleteCita, fetchPacientes } from '../api';
 
-function Citas() {
+const Citas = () => {
     const [citas, setCitas] = useState([]);
-    const [form, setForm] = useState({ paciente_id: '', fecha_cita: '', motivo: '' });
+    const [pacientes, setPacientes] = useState([]); // Para el select
+    const [form, setForm] = useState({ fecha: '', motivo: '', paciente_id: '' });
+    const [editando, setEditando] = useState(false);
+    const [idEditar, setIdEditar] = useState(null);
 
     useEffect(() => {
-        obtenerCitas();
+        cargarDatos();
     }, []);
 
-    const obtenerCitas = async () => {
+    const cargarDatos = async () => {
         try {
-            const res = await api.get('/api/citas');
-            setCitas(res.data);
+            const resCitas = await fetchCitas();
+            const resPacientes = await fetchPacientes();
+            setCitas(resCitas.data);
+            setPacientes(resPacientes.data);
         } catch (error) {
-            console.error(error);
+            console.error('Error cargando datos:', error);
         }
+    };
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/api/citas', form);
-            alert('Cita agendada');
-            obtenerCitas();
+            if (editando) {
+                await updateCita(idEditar, form);
+                alert('Cita actualizada');
+                setEditando(false);
+                setIdEditar(null);
+            } else {
+                await createCita(form);
+                alert('Cita creada');
+            }
+            setForm({ fecha: '', motivo: '', paciente_id: '' });
+            cargarDatos();
         } catch (error) {
-            alert('Error: ' + (error.response?.data?.message || 'Verifique el documento del paciente'));
+            console.error('Error:', error);
+            alert('Error al procesar la cita');
+        }
+    };
+
+    const editar = (cita) => {
+        // Formatear fecha para que el input type="datetime-local" la acepte
+        // La fecha suele venir como "YYYY-MM-DD HH:MM:SS", el input requiere "YYYY-MM-DDTHH:MM"
+        const fechaFormatoInput = cita.fecha.replace(' ', 'T').slice(0, 16); 
+        
+        setForm({ 
+            fecha: fechaFormatoInput, 
+            motivo: cita.motivo, 
+            paciente_id: cita.paciente_id 
+        });
+        setEditando(true);
+        setIdEditar(cita.id);
+    };
+
+    const eliminar = async (id) => {
+        if (window.confirm('¿Eliminar esta cita?')) {
+            try {
+                await deleteCita(id);
+                cargarDatos();
+            } catch (error) {
+                console.error(error);
+            }
         }
     };
 
     return (
         <div className="container mt-4">
-            <h2>Gestión de Citas</h2>
+            <h2 className="mb-4">Gestión de Citas</h2>
 
-            {/* Formulario */}
-            <div className="card p-3 mb-4 bg-light">
-                <h5>Agendar Cita</h5>
-                <form onSubmit={handleSubmit} className="row g-3">
-                    <div className="col-md-4">
-                        <input 
-                            className="form-control" 
-                            placeholder="Documento del Paciente" 
-                            value={form.paciente_id}
-                            onChange={(e) => setForm({...form, paciente_id: e.target.value})} 
-                            required 
-                        />
+            <div className="card mb-4 p-3 shadow-sm">
+                <h4>{editando ? 'Editar Cita' : 'Nueva Cita'}</h4>
+                <form onSubmit={handleSubmit}>
+                    <div className="row">
+                        <div className="col-md-3 mb-2">
+                            <label className="form-label">Fecha y Hora</label>
+                            <input type="datetime-local" name="fecha" value={form.fecha} onChange={handleChange} className="form-control" required />
+                        </div>
+                        <div className="col-md-4 mb-2">
+                            <label className="form-label">Motivo</label>
+                            <input name="motivo" value={form.motivo} onChange={handleChange} className="form-control" placeholder="Ej: Consulta general" required />
+                        </div>
+                        <div className="col-md-3 mb-2">
+                            <label className="form-label">Paciente</label>
+                            <select name="paciente_id" value={form.paciente_id} onChange={handleChange} className="form-select" required>
+                                <option value="">Seleccione...</option>
+                                {pacientes.map(p => (
+                                    <option key={p.id} value={p.id}>{p.nombre}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="col-md-2 d-flex align-items-end mb-2">
+                            <button type="submit" className={`btn ${editando ? 'btn-warning' : 'btn-primary'} w-100`}>
+                                {editando ? 'Actualizar' : 'Agendar'}
+                            </button>
+                        </div>
                     </div>
-                    <div className="col-md-4">
-                        <input 
-                            type="datetime-local" 
-                            className="form-control" 
-                            value={form.fecha_cita}
-                            onChange={(e) => setForm({...form, fecha_cita: e.target.value})} 
-                            required 
-                        />
-                    </div>
-                    <div className="col-md-4">
-                        <input 
-                            className="form-control" 
-                            placeholder="Motivo" 
-                            value={form.motivo}
-                            onChange={(e) => setForm({...form, motivo: e.target.value})} 
-                        />
-                    </div>
-                    <div className="col-12">
-                        <button className="btn btn-primary">Agendar</button>
-                    </div>
+                    {editando && <button type="button" className="btn btn-secondary mt-2" onClick={() => {
+                        setEditando(false);
+                        setForm({ fecha: '', motivo: '', paciente_id: '' });
+                    }}>Cancelar Edición</button>}
                 </form>
             </div>
 
-            {/* Listado */}
-            <div className="row">
-                {citas.map((cita) => (
-                    <div key={cita.id} className="col-md-4 mb-3">
-                        <div className="card">
-                            <div className="card-body">
-                                <h5 className="card-title">{cita.nombre}</h5>
-                                <h6 className="card-subtitle mb-2 text-muted">{new Date(cita.fecha_cita).toLocaleString()}</h6>
-                                <p className="card-text">
-                                    <strong>Motivo:</strong> {cita.motivo} <br/>
-                                    <strong>Estado:</strong> {cita.estado}
-                                </p>
-                            </div>
+            <ul className="list-group">
+                {citas.map((c) => (
+                    <li key={c.id} className="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{c.fecha}</strong> - {c.motivo} 
+                            <span className="badge bg-info text-dark ms-2">
+                                {pacientes.find(p => p.id === c.paciente_id)?.nombre || 'Paciente ID: ' + c.paciente_id}
+                            </span>
                         </div>
-                    </div>
+                        <div>
+                            <button className="btn btn-sm btn-outline-primary me-2" onClick={() => editar(c)}>Editar</button>
+                            <button className="btn btn-sm btn-outline-danger" onClick={() => eliminar(c.id)}>Eliminar</button>
+                        </div>
+                    </li>
                 ))}
-            </div>
+            </ul>
         </div>
     );
-}
+};
 
 export default Citas;
