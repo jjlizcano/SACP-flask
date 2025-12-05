@@ -48,17 +48,21 @@ const Citas = () => {
     };
 
     const editar = (cita) => {
-        // Formatear fecha para que el input type="datetime-local" la acepte
-        // La fecha suele venir como "YYYY-MM-DD HH:MM:SS", el input requiere "YYYY-MM-DDTHH:MM"
-        const fechaFormatoInput = cita.fecha.replace(' ', 'T').slice(0, 16); 
-        
-        setForm({ 
-            fecha: fechaFormatoInput, 
-            motivo: cita.motivo, 
-            paciente_id: cita.paciente_id 
-        });
         setEditando(true);
         setIdEditar(cita.id);
+        
+        // Convertir la fecha al formato correcto para el input datetime-local
+        let fechaFormateada = '';
+        if (cita.fecha_cita) {
+            // Si viene como "2024-12-04 10:30:00", convertir a "2024-12-04T10:30"
+            fechaFormateada = cita.fecha_cita.replace(' ', 'T').slice(0, 16);
+        }
+        
+        setForm({
+            fecha: fechaFormateada,
+            motivo: cita.motivo || '',
+            paciente_id: cita.paciente_id || ''
+        });
     };
 
     const eliminar = async (id) => {
