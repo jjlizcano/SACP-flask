@@ -3,6 +3,17 @@ from models import CitaModel, PacienteModel
 
 citas_bp = Blueprint('citas', __name__)
 
+# Obtener una cita por su ID (GET)
+@citas_bp.route('/citas/<int:id>', methods=['GET'])
+def get_cita(id):
+    modelo = CitaModel()
+    cita = modelo.obtener_por_id(id)
+    
+    if cita:
+        return jsonify(cita), 200
+    else:
+        return jsonify({"success": False, "message": "Cita no encontrada"}), 404
+
 # Obtener todas las citas (GET)
 @citas_bp.route('/citas', methods=['GET'])
 def get_citas():

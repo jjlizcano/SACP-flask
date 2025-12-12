@@ -125,6 +125,29 @@ class CitaModel:
                 cursor.close()
                 conn.close()
 
+    # Dentro de class CitaModel en models.py
+
+    def obtener_por_id(self, id_cita): # Busca una cita específica por su ID incluyendo datos del paciente
+        conn = conectar_db()
+        cita = None
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)
+                sql = """
+                    SELECT c.id, p.nombre, p.documento, c.fecha_cita, c.motivo, c.estado 
+                    FROM citas c
+                    JOIN pacientes p ON c.paciente_id = p.documento
+                    WHERE c.id = %s
+                """
+                cursor.execute(sql, (id_cita,))
+                cita = cursor.fetchone()
+            except mysql.connector.Error as err:
+                print(f"Error al obtener cita: {err}")
+            finally:
+                cursor.close()
+                conn.close()
+        return cita
+
     def obtener_citas_detalladas(self): # Obtener todas las citas con detalles del paciente
         conn = conectar_db()
         citas = []

@@ -3,6 +3,17 @@ from models import PacienteModel
 
 pacientes_bp = Blueprint('pacientes', __name__)
 
+# Ruta para obtener un paciente por su documento (GET)
+@pacientes_bp.route('/pacientes/<documento>', methods=['GET'])
+def get_paciente(documento):
+    modelo = PacienteModel()
+    paciente = modelo.buscar_por_documento(documento)
+    
+    if paciente:
+        return jsonify(paciente), 200
+    else:
+        return jsonify({"success": False, "message": "Paciente no encontrado"}), 404
+    
 # Ruta para obtener todos los pacientes (GET)
 @pacientes_bp.route('/pacientes', methods=['GET'])
 def get_pacientes():
