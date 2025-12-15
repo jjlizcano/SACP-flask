@@ -9,8 +9,7 @@ from routes.citas import citas_bp
 app = Flask(__name__)
 
 # Configuración de CORS para permitir solicitudes desde el frontend
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
-
+CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://localhost:3000"])
 app.secret_key = 'super_secreto_desarrollo' # Clave para sesiones (en producción, usar variable de entorno)
 
 # Registro de blueprints
