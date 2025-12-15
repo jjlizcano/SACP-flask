@@ -5,6 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // Importar componentes
 import Login from './componentes/auth/Login';
 import ListarPacientes from './componentes/pacientes/Listar';
+import AgregarPaciente from './componentes/pacientes/Agregar';
+import EditarPaciente from './componentes/pacientes/Editar';
 
 function App() {
   return (
@@ -14,10 +16,9 @@ function App() {
         
         {/* Rutas de Pacientes */}
         <Route path="/pacientes" element={<ListarPacientes />} />
+        <Route path="/pacientes/agregar" element={<AgregarPaciente />} />
+        <Route path="/pacientes/editar/:id" element={<EditarPaciente />} />
         
-        {/* Aquí agregaremos luego las rutas de Agregar y Editar */}
-        {/* <Route path="/pacientes/agregar" element={<AgregarPaciente />} /> */}
-        {/* <Route path="/pacientes/editar/:id" element={<EditarPaciente />} /> */}
       </Routes>
     </BrowserRouter>
   );
