@@ -7,6 +7,9 @@ import Login from './componentes/auth/Login';
 import ListarPacientes from './componentes/pacientes/Listar';
 import AgregarPaciente from './componentes/pacientes/Agregar';
 import EditarPaciente from './componentes/pacientes/Editar';
+import ListarCitas from './componentes/citas/Listar';
+import AgregarCita from './componentes/citas/Agregar';
+import EditarCita from './componentes/citas/Editar';
 
 function App() {
   return (
@@ -18,6 +21,11 @@ function App() {
         <Route path="/pacientes" element={<ListarPacientes />} />
         <Route path="/pacientes/agregar" element={<AgregarPaciente />} />
         <Route path="/pacientes/editar/:id" element={<EditarPaciente />} />
+        
+        {/* Rutas de Citas */}
+        <Route path="/citas" element={<ListarCitas />} />
+        <Route path="/citas/agregar" element={<AgregarCita />} />
+        <Route path="/citas/editar/:id" element={<EditarCita />} />
         
       </Routes>
     </BrowserRouter>
