@@ -1,2 +1,1 @@
-# TalentoTech_intermedio
-Son los códigos realizados en el curso de programación intermedia de Talento Tech
+Este es el proyecto que realicé en el bootcamp de programación intermedio de Talento TECH
